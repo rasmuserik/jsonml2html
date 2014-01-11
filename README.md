@@ -1,33 +1,69 @@
 # jsonml2html
 [![ci](https://secure.travis-ci.org/rasmuserik/jsonml2html.png)](http://travis-ci.org/rasmuserik/jsonml2html)
 
-...
+Converts sugared jsonml into html strings
 
-    if isNodeJs 
-      exports.about =
+# Actual code
+
+    jsonml2html = exports
+    if isNodeJs
+      jsonml2html.about =
         title: "jsonml2html"
-        description: "..."
-        html5:
-          css: [
-            "//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"
-            "//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css"
-          ]
-          js: [
-            "//code.jquery.com/jquery-1.10.2.min.js"
-            "//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"
-          ]
-          files: [
-          ]
-        dependencies:
-          solapp: "*"
+        description: "Converts sugared jsonml into html strings"
+        npmjs: true
+        webjs: true
     
 
-# Main
+## xmlEscape
 
-    exports.main = (opt) ->
-      opt.setStyle {h1: {backgroundColor: "green"}}
-      opt.setContent ["div", ["h1", "hello world"]]
-      opt.done()
+    jsonml2html.xmlEscape = (str) -> String(str).replace RegExp("[\x00-\x1f\x80-\uffff&<>\"']", "g"), (c) -> "&##{c.charCodeAt 0};"
+
+## obj2style
+
+    jsonml2html.obj2style = (obj) ->
+      (for key, val of obj
+        key = key.replace /[A-Z]/g, (c) -> "-" + c.toLowerCase()
+        val = "#{val}px" if typeof val == "number"
+        "#{key}:#{val}"
+      ).join ";"
+
+## jsonml2html
+
+    jsonml2html.jsonml2html = (arr) ->
+      return "#{jsonml2html.xmlEscape arr}" if !Array.isArray(arr)
+
+raw html, useful for stuff which shouldn't be xmlescaped etc.
+
+      return arr[1] if arr[0] == "rawhtml"
+
+normalise jsonml, make sure it contains attributes
+
+      arr = [arr[0], {}].concat arr.slice(1) if arr[1]?.constructor != Object
+      attr = {}
+      attr[key] = val for key, val of arr[1]
+
+convert style objects to strings
+
+      attr.style = jsonml2html.obj2style attr.style if attr.style?.constructor == Object
+
+shorthand for classes and ids
+
+      tag = arr[0].replace /#([^.#]*)/, ((_, id) -> attr.id = id; "")
+      tag = tag.replace /\.([^.#]*)/g, (_, cls) ->
+        attr["class"] = if attr["class"] == undefined then cls else "#{attr["class"]} #{cls}"
+        ""
+
+create actual tag string
+
+      result = "<#{tag}#{(" #{key}=\"#{jsonml2html.xmlEscape val}\"" for key, val of attr).join ""}>"
+
+add children and endtag, if there are children. `<foo></foo>` is done with `["foo", ""]`
+
+      result += "#{arr.slice(2).map(jsonml2html.jsonml2html).join ""}</#{tag}>" if arr.length > 2
+      return result
+    
+    
+    
 
 
 ----

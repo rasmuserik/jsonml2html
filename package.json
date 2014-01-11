@@ -1,23 +1,10 @@
 {
     "name": "jsonml2html",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "title": "jsonml2html",
-    "description": "...",
-    "html5": {
-        "css": [
-            "//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css",
-            "//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css"
-        ],
-        "js": [
-            "//code.jquery.com/jquery-1.10.2.min.js",
-            "//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"
-        ],
-        "files": []
-    },
-    "dependencies": {
-        "solapp": "*",
-        "platformenv": "*"
-    },
+    "description": "Converts sugared jsonml into html strings",
+    "npmjs": true,
+    "webjs": true,
     "fullname": "jsonml2html",
     "author": "Rasmus Erik Voel Jensen (solsort.com)",
     "owner": "rasmuserik",
@@ -25,6 +12,9 @@
     "scripts": {
         "start": "node ./node_modules/solapp/solapp.js start",
         "test": "node ./node_modules/solapp/solapp.js test"
+    },
+    "dependencies": {
+        "platformenv": "*"
     },
     "repository": {
         "type": "git",
