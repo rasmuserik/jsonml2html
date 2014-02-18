@@ -1,23 +1,14 @@
 {
     "name": "jsonml2html",
-    "version": "0.0.1",
-    "title": "jsonml2html",
+    "version": "0.0.2",
     "description": "Converts sugared jsonml into html strings",
-    "npmjs": true,
-    "webjs": true,
-    "fullname": "jsonml2html",
     "author": "Rasmus Erik Voel Jensen (solsort.com)",
-    "owner": "rasmuserik",
     "main": "jsonml2html.js",
     "scripts": {
-        "start": "node ./node_modules/solapp/solapp.js start",
-        "test": "node ./node_modules/solapp/solapp.js test"
-    },
-    "dependencies": {
-        "platformenv": "*"
+          "prepublish": "reputil build; uglifyjs -m -c warnings=false -d isNodeJs=false,runTest=false jsonml2html.js > jsonml2html.min.js; git add jsonml2html.min.js README.md"
     },
     "repository": {
         "type": "git",
-        "url": "http://github.com/rasmuserik/jsonml2html.git"
+        "url": "https://github.com/rasmuserik/jsonml2html.git"
     }
 }

@@ -1,15 +1,22 @@
 #{{{1 Actual code
-require("platformenv").define global if typeof isNodeJs != "boolean"
-jsonml2html = exports
+
+#{{{2 Minification globals #
+# define `isNodeJs` and `runTest` in such a way that they will be fully removed by `uglifyjs -mc -d isNodeJs=false -d runTest=false `
+#
+if typeof isNodeJs == "undefined" or typeof runTest == "undefined" then do ->
+  root = if typeof global == "undefined" then window else global
+  root.isNodeJs = (typeof window == "undefined") if typeof isNodeJs == "undefined"
+  root.runTest = true if typeof runTest == "undefined"
+
 if isNodeJs
-  jsonml2html.about =
-    title: "jsonml2html"
-    description: "Converts sugared jsonml into html strings"
-    npmjs: true
-    webjs: true
+  jsonml2html = exports
+else
+  jsonml2html = window.jsonml2html = {}
+
 
 #{{{2 xmlEscape
 jsonml2html.xmlEscape = (str) -> String(str).replace RegExp("[\x00-\x1f\x80-\uffff&<>\"']", "g"), (c) -> "&##{c.charCodeAt 0};"
+
 #{{{2 obj2style
 jsonml2html.obj2style = (obj) ->
   (for key, val of obj
@@ -17,6 +24,7 @@ jsonml2html.obj2style = (obj) ->
     val = "#{val}px" if typeof val == "number"
     "#{key}:#{val}"
   ).join ";"
+
 #{{{2 jsonml2html
 jsonml2html.jsonml2html = (arr) ->
   return "#{jsonml2html.xmlEscape arr}" if !Array.isArray(arr)
