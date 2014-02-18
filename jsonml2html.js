@@ -2,10 +2,6 @@
 (function() {
   var jsonml2html, obj2style, xmlEscape;
 
-  process.nextTick(function() {
-    return console.log(jsonml2html(["div", "<blåbærgrød>"]));
-  });
-
   if (typeof isNodeJs === "undefined" || typeof runTest === "undefined") {
     (function() {
       var root;
@@ -17,27 +13,6 @@
         return root.runTest = isNodeJs && process.argv[2] === "test";
       }
     })();
-  }
-
-  if (runTest) {
-    process.nextTick(function() {
-      var assert, jsonml;
-      assert = require("assert");
-      jsonml = [
-        "div.main", {
-          style: {
-            background: "red",
-            textSize: 12
-          }
-        }, ["h1#theHead.foo.bar", "Blåbærgrød"], [
-          "img", {
-            src: "foo",
-            alt: 'the "quoted"'
-          }
-        ], ["script", ["rawhtml", "console.log(foo<bar)"]]
-      ];
-      return assert.equal(jsonml2html(jsonml), "<div style=\"background:red;text-size:12px\" class=\"main\"><h1 id=\"theHead\" class=\"foo bar\">Bl&#229;b&#230;rgr&#248;d</h1><img src=\"foo\" alt=\"the &#34;quoted&#34;\"><script>console.log(foo<bar)</script></div>");
-    });
   }
 
   xmlEscape = function(str) {
@@ -107,6 +82,27 @@
     }
     return result;
   };
+
+  if (runTest) {
+    process.nextTick(function() {
+      var assert, jsonml;
+      assert = require("assert");
+      jsonml = [
+        "div.main", {
+          style: {
+            background: "red",
+            textSize: 12
+          }
+        }, ["h1#theHead.foo.bar", "Blåbærgrød"], [
+          "img", {
+            src: "foo",
+            alt: 'the "quoted"'
+          }
+        ], ["script", ["rawhtml", "console.log(foo<bar)"]]
+      ];
+      return assert.equal(jsonml2html(jsonml), "<div style=\"background:red;text-size:12px\" class=\"main\"><h1 id=\"theHead\" class=\"foo bar\">Bl&#229;b&#230;rgr&#248;d</h1><img src=\"foo\" alt=\"the &#34;quoted&#34;\"><script>console.log(foo<bar)</script></div>");
+    });
+  }
 
   jsonml2html.xmlEscape = xmlEscape;
 

@@ -1,10 +1,8 @@
-# jsonml2html 0.0.3
+# jsonml2html 0.0.4
 
-Converts sugared jsonml into html strings
+Microlibrary that converts jsonml into html strings
 [![ci](https://secure.travis-ci.org/rasmuserik/jsonml2html.png)](http://travis-ci.org/rasmuserik/jsonml2html)
 
-
-# Microlibrary that converts JsonML to HTML/XML
 
 Install
 
@@ -44,16 +42,9 @@ Notics empty tags must have empty string content to emit endtag:
     > jsonml2html(["i.fa.fa-book",""]); // RIGHT
     <i class="fa fa-book"></i>
 
-
-    process.nextTick ->
-      console.log jsonml2html(["div", "<blåbærgrød>"])
-
-
 # Literate source code
 
-    
-
-## globals
+## Globals
 
 Define `isNodeJs` and `runTest` in such a way that they will be fully removed by `uglifyjs -mc -d isNodeJs=false -d runTest=false `
 
@@ -62,26 +53,6 @@ Define `isNodeJs` and `runTest` in such a way that they will be fully removed by
       root = if typeof global == "undefined" then window else global
       root.isNodeJs = (typeof window == "undefined") if typeof isNodeJs == "undefined"
       root.runTest = isNodeJs and process.argv[2] == "test" if typeof runTest == "undefined"
-    
-    
-
-## Test / examples
-
-    if runTest then process.nextTick ->
-      assert = require "assert"
-      jsonml = ["div.main",
-          style:
-            background: "red"
-            textSize: 12
-        ["h1#theHead.foo.bar", "Blåbærgrød"],
-        ["img",
-          src: "foo"
-          alt: 'the "quoted"'],
-        ["script", ["rawhtml", "console.log(foo<bar)"]]]
-          
-      assert.equal jsonml2html(jsonml),
-        """<div style="background:red;text-size:12px" class="main"><h1 id="theHead" class="foo bar">Bl&#229;b&#230;rgr&#248;d</h1><img src="foo" alt="the &#34;quoted&#34;"><script>console.log(foo<bar)</script></div>"""
-    
     
     
 
@@ -137,7 +108,27 @@ add children and endtag, if there are children. `<foo></foo>` is done with `["fo
     
     
 
-{{{ exports
+## Test / examples
+
+    if runTest then process.nextTick ->
+      assert = require "assert"
+      jsonml = ["div.main",
+          style:
+            background: "red"
+            textSize: 12
+        ["h1#theHead.foo.bar", "Blåbærgrød"],
+        ["img",
+          src: "foo"
+          alt: 'the "quoted"'],
+        ["script", ["rawhtml", "console.log(foo<bar)"]]]
+          
+      assert.equal jsonml2html(jsonml),
+        """<div style="background:red;text-size:12px" class="main"><h1 id="theHead" class="foo bar">Bl&#229;b&#230;rgr&#248;d</h1><img src="foo" alt="the &#34;quoted&#34;"><script>console.log(foo<bar)</script></div>"""
+    
+    
+    
+
+## Exporting
 
     jsonml2html.xmlEscape = xmlEscape
     jsonml2html.obj2style = obj2style
@@ -146,6 +137,7 @@ add children and endtag, if there are children. `<foo></foo>` is done with `["fo
       module.exports = jsonml2html
     else
       window.jsonml2html = jsonml2html
+    
     
 
 ----

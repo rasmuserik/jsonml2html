@@ -1,5 +1,3 @@
-#{{{1 Microlibrary that converts JsonML to HTML/XML
-#
 # Install
 #
 #     bower install jsonml2html
@@ -38,12 +36,9 @@
 #     > jsonml2html(["i.fa.fa-book",""]); // RIGHT
 #     <i class="fa fa-book"></i>
 #
-process.nextTick ->
-  console.log jsonml2html(["div", "<blåbærgrød>"])
-#
 #{{{1 Literate source code
-
-#{{{2 globals
+#
+#{{{2 Globals
 #
 # Define `isNodeJs` and `runTest` in such a way that they will be fully removed by `uglifyjs -mc -d isNodeJs=false -d runTest=false `
 #
@@ -51,24 +46,6 @@ if typeof isNodeJs == "undefined" or typeof runTest == "undefined" then do ->
   root = if typeof global == "undefined" then window else global
   root.isNodeJs = (typeof window == "undefined") if typeof isNodeJs == "undefined"
   root.runTest = isNodeJs and process.argv[2] == "test" if typeof runTest == "undefined"
-
-
-#{{{2 Test / examples
-if runTest then process.nextTick ->
-  assert = require "assert"
-  jsonml = ["div.main",
-      style:
-        background: "red"
-        textSize: 12
-    ["h1#theHead.foo.bar", "Blåbærgrød"],
-    ["img",
-      src: "foo"
-      alt: 'the "quoted"'],
-    ["script", ["rawhtml", "console.log(foo<bar)"]]]
-      
-  assert.equal jsonml2html(jsonml),
-    """<div style="background:red;text-size:12px" class="main"><h1 id="theHead" class="foo bar">Bl&#229;b&#230;rgr&#248;d</h1><img src="foo" alt="the &#34;quoted&#34;"><script>console.log(foo<bar)</script></div>"""
-
 
 
 #{{{2 xmlEscape
@@ -105,7 +82,25 @@ jsonml2html = (arr) ->
   return result
 
 
-#{{{ exports
+#{{{2 Test / examples
+if runTest then process.nextTick ->
+  assert = require "assert"
+  jsonml = ["div.main",
+      style:
+        background: "red"
+        textSize: 12
+    ["h1#theHead.foo.bar", "Blåbærgrød"],
+    ["img",
+      src: "foo"
+      alt: 'the "quoted"'],
+    ["script", ["rawhtml", "console.log(foo<bar)"]]]
+      
+  assert.equal jsonml2html(jsonml),
+    """<div style="background:red;text-size:12px" class="main"><h1 id="theHead" class="foo bar">Bl&#229;b&#230;rgr&#248;d</h1><img src="foo" alt="the &#34;quoted&#34;"><script>console.log(foo<bar)</script></div>"""
+
+
+
+#{{{2 Exporting
 jsonml2html.xmlEscape = xmlEscape
 jsonml2html.obj2style = obj2style
 jsonml2html.jsonml2html= jsonml2html
@@ -113,3 +108,4 @@ if isNodeJs
   module.exports = jsonml2html
 else
   window.jsonml2html = jsonml2html
+
