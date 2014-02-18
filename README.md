@@ -1,37 +1,98 @@
-# jsonml2html 0.0.2
+# jsonml2html 0.0.3
 
 Converts sugared jsonml into html strings
 [![ci](https://secure.travis-ci.org/rasmuserik/jsonml2html.png)](http://travis-ci.org/rasmuserik/jsonml2html)
 
 
-# Actual code
+# Microlibrary that converts JsonML to HTML/XML
+
+Install
+
+    bower install jsonml2html
+    npm install jsonml2html
+
+
+Simple conversion of jsonml to html
+
+    > jsonml2html(["div", "hello world", ["img", {src: "smiley.png"}]]);
+    '<div>hello world<img src="smiley"></div>'
+
+Implicit class and id
+
+    > jsonml2html(["div#root.red", "hello world", ["img.cool.im", {src: "smiley.png"}]]);
+    '<div id="root" class="red">hello world<img class="cool im" src="smiley"></div>'
+
+Inline style
+
+    > jsonml2html(["div", {style: {background: "blue", fontSize: 16}}, "hello world"]);
+    '<div style="background:blue;font-size:16px">hello world</div>'
+
+Automatic escaping
+
+    > jsonml2html(["div", "<blåbærgrød>"]);
+    '<div>&#60;bl&#229;b&#230;rgr&#248;d&#62;</div>'
+
+Raw html passthrough
+
+    > jsonml2html(["script", ["rawhtml", "a<b"]]);
+    '<script>a<b</script>'
+
+Notics empty tags must have empty string content to emit endtag:
+
+    > jsonml2html(["i.fa.fa-book"]); // WRONG
+    <i class="fa fa-book">
+    > jsonml2html(["i.fa.fa-book",""]); // RIGHT
+    <i class="fa fa-book"></i>
+
+
+    process.nextTick ->
+      console.log jsonml2html(["div", "<blåbærgrød>"])
+
+
+# Literate source code
 
     
 
-## Minification globals #
-define `isNodeJs` and `runTest` in such a way that they will be fully removed by `uglifyjs -mc -d isNodeJs=false -d runTest=false `
+## globals
+
+Define `isNodeJs` and `runTest` in such a way that they will be fully removed by `uglifyjs -mc -d isNodeJs=false -d runTest=false `
 
 
     if typeof isNodeJs == "undefined" or typeof runTest == "undefined" then do ->
       root = if typeof global == "undefined" then window else global
       root.isNodeJs = (typeof window == "undefined") if typeof isNodeJs == "undefined"
-      root.runTest = true if typeof runTest == "undefined"
+      root.runTest = isNodeJs and process.argv[2] == "test" if typeof runTest == "undefined"
     
-    if isNodeJs
-      jsonml2html = exports
-    else
-      jsonml2html = window.jsonml2html = {}
+    
+
+## Test / examples
+
+    if runTest then process.nextTick ->
+      assert = require "assert"
+      jsonml = ["div.main",
+          style:
+            background: "red"
+            textSize: 12
+        ["h1#theHead.foo.bar", "Blåbærgrød"],
+        ["img",
+          src: "foo"
+          alt: 'the "quoted"'],
+        ["script", ["rawhtml", "console.log(foo<bar)"]]]
+          
+      assert.equal jsonml2html(jsonml),
+        """<div style="background:red;text-size:12px" class="main"><h1 id="theHead" class="foo bar">Bl&#229;b&#230;rgr&#248;d</h1><img src="foo" alt="the &#34;quoted&#34;"><script>console.log(foo<bar)</script></div>"""
+    
     
     
 
 ## xmlEscape
 
-    jsonml2html.xmlEscape = (str) -> String(str).replace RegExp("[\x00-\x1f\x80-\uffff&<>\"']", "g"), (c) -> "&##{c.charCodeAt 0};"
+    xmlEscape = (str) -> String(str).replace RegExp("[\x00-\x1f\x80-\uffff&<>\"']", "g"), (c) -> "&##{c.charCodeAt 0};"
     
 
 ## obj2style
 
-    jsonml2html.obj2style = (obj) ->
+    obj2style = (obj) ->
       (for key, val of obj
         key = key.replace /[A-Z]/g, (c) -> "-" + c.toLowerCase()
         val = "#{val}px" if typeof val == "number"
@@ -41,8 +102,8 @@ define `isNodeJs` and `runTest` in such a way that they will be fully removed by
 
 ## jsonml2html
 
-    jsonml2html.jsonml2html = (arr) ->
-      return "#{jsonml2html.xmlEscape arr}" if !Array.isArray(arr)
+    jsonml2html = (arr) ->
+      return "#{xmlEscape arr}" if !Array.isArray(arr)
 
 raw html, useful for stuff which shouldn't be xmlescaped etc.
 
@@ -56,7 +117,7 @@ normalise jsonml, make sure it contains attributes
 
 convert style objects to strings
 
-      attr.style = jsonml2html.obj2style attr.style if attr.style?.constructor == Object
+      attr.style = obj2style attr.style if attr.style?.constructor == Object
 
 shorthand for classes and ids
 
@@ -67,14 +128,24 @@ shorthand for classes and ids
 
 create actual tag string
 
-      result = "<#{tag}#{(" #{key}=\"#{jsonml2html.xmlEscape val}\"" for key, val of attr).join ""}>"
+      result = "<#{tag}#{(" #{key}=\"#{xmlEscape val}\"" for key, val of attr).join ""}>"
 
 add children and endtag, if there are children. `<foo></foo>` is done with `["foo", ""]`
 
-      result += "#{arr.slice(2).map(jsonml2html.jsonml2html).join ""}</#{tag}>" if arr.length > 2
+      result += "#{arr.slice(2).map(jsonml2html).join ""}</#{tag}>" if arr.length > 2
       return result
     
     
+
+{{{ exports
+
+    jsonml2html.xmlEscape = xmlEscape
+    jsonml2html.obj2style = obj2style
+    jsonml2html.jsonml2html= jsonml2html
+    if isNodeJs
+      module.exports = jsonml2html
+    else
+      window.jsonml2html = jsonml2html
     
 
 ----
