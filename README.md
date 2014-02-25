@@ -1,4 +1,4 @@
-# jsonml2html 0.0.4
+# jsonml2html 0.0.6
 
 Microlibrary that converts jsonml into html strings
 [![ci](https://secure.travis-ci.org/rasmuserik/jsonml2html.png)](http://travis-ci.org/rasmuserik/jsonml2html)
@@ -12,34 +12,34 @@ Install
 
 Simple conversion of jsonml to html
 
-    > jsonml2html(["div", "hello world", ["img", {src: "smiley.png"}]]);
+    > jsonml2html.toString(["div", "hello world", ["img", {src: "smiley.png"}]]);
     '<div>hello world<img src="smiley"></div>'
 
 Implicit class and id
 
-    > jsonml2html(["div#root.red", "hello world", ["img.cool.im", {src: "smiley.png"}]]);
+    > jsonml2html.toString(["div#root.red", "hello world", ["img.cool.im", {src: "smiley.png"}]]);
     '<div id="root" class="red">hello world<img class="cool im" src="smiley"></div>'
 
 Inline style
 
-    > jsonml2html(["div", {style: {background: "blue", fontSize: 16}}, "hello world"]);
+    > jsonml2html.toString(["div", {style: {background: "blue", fontSize: 16}}, "hello world"]);
     '<div style="background:blue;font-size:16px">hello world</div>'
 
 Automatic escaping
 
-    > jsonml2html(["div", "<blåbærgrød>"]);
+    > jsonml2html.toString(["div", "<blåbærgrød>"]);
     '<div>&#60;bl&#229;b&#230;rgr&#248;d&#62;</div>'
 
 Raw html passthrough
 
-    > jsonml2html(["script", ["rawhtml", "a<b"]]);
+    > jsonml2html.toString(["script", ["rawhtml", "a<b"]]);
     '<script>a<b</script>'
 
 Notics empty tags must have empty string content to emit endtag:
 
-    > jsonml2html(["i.fa.fa-book"]); // WRONG
+    > jsonml2html.toString(["i.fa.fa-book"]); // WRONG
     <i class="fa fa-book">
-    > jsonml2html(["i.fa.fa-book",""]); // RIGHT
+    > jsonml2html.toString(["i.fa.fa-book",""]); // RIGHT
     <i class="fa fa-book"></i>
 
 # Literate source code
@@ -54,12 +54,13 @@ Define `isNodeJs` and `runTest` in such a way that they will be fully removed by
       root.isNodeJs = (typeof window == "undefined") if typeof isNodeJs == "undefined"
       root.runTest = isNodeJs and process.argv[2] == "test" if typeof runTest == "undefined"
     
-    
+    jsonml2html = if isNodeJs then exports else window.jsonml2html = {}
 
 ## xmlEscape
 
     xmlEscape = (str) -> String(str).replace RegExp("[\x00-\x1f\x80-\uffff&<>\"']", "g"), (c) -> "&##{c.charCodeAt 0};"
     
+    jsonml2html.xmlEscape = xmlEscape
 
 ## obj2style
 
@@ -70,10 +71,11 @@ Define `isNodeJs` and `runTest` in such a way that they will be fully removed by
         "#{key}:#{val}"
       ).join ";"
     
+    jsonml2html.obj2style = obj2style
 
-## jsonml2html
+## toString
 
-    jsonml2html = (arr) ->
+    toString = (arr) ->
       return "#{xmlEscape arr}" if !Array.isArray(arr)
 
 raw html, useful for stuff which shouldn't be xmlescaped etc.
@@ -103,8 +105,9 @@ create actual tag string
 
 add children and endtag, if there are children. `<foo></foo>` is done with `["foo", ""]`
 
-      result += "#{arr.slice(2).map(jsonml2html).join ""}</#{tag}>" if arr.length > 2
+      result += "#{arr.slice(2).map(toString).join ""}</#{tag}>" if arr.length > 2
       return result
+    jsonml2html.toString = toString
     
     
 
@@ -122,21 +125,11 @@ add children and endtag, if there are children. `<foo></foo>` is done with `["fo
           alt: 'the "quoted"'],
         ["script", ["rawhtml", "console.log(foo<bar)"]]]
           
-      assert.equal jsonml2html(jsonml),
+      assert.equal jsonml2html.toString(jsonml),
         """<div style="background:red;text-size:12px" class="main"><h1 id="theHead" class="foo bar">Bl&#229;b&#230;rgr&#248;d</h1><img src="foo" alt="the &#34;quoted&#34;"><script>console.log(foo<bar)</script></div>"""
     
     
     
-
-## Exporting
-
-    jsonml2html.xmlEscape = xmlEscape
-    jsonml2html.obj2style = obj2style
-    jsonml2html.jsonml2html= jsonml2html
-    if isNodeJs
-      module.exports = jsonml2html
-    else
-      window.jsonml2html = jsonml2html
     
     
 

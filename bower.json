@@ -1,6 +1,6 @@
 {
   "name": "jsonml2html",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "Microlibrary that converts jsonml into html strings",
   "authors": "Rasmus Erik Voel Jensen (solsort.com)",
   "main": "jsonml2html.min.js",
